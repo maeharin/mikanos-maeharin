@@ -339,10 +339,13 @@ extern "C" void KernelMainNewStack(
   unsigned int count = 0;
 
   while (true) {
+    // カウンター
     ++count;
     sprintf(str, "%010u", count);
-    FillRectangle(*main_window->Writer(), {24, 28}, {8 * 10, 16}, {0xc6, 0xc6, 0xc6});
-    WriteString(*main_window->Writer(), {24, 28}, str, {0, 0, 0});
+    // カウンター背景
+    FillRectangle(*main_window->Writer(), {10, 28}, {8 * 10, 16}, {0x0a, 0x0e, 0x12});
+    // カウンター数値文字
+    WriteString(*main_window->Writer(), {10, 28}, str, {0x3c, 0xba, 0xe2});
     layer_manager->Draw(main_window_layer_id);
 
     __asm__("cli");

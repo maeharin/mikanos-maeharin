@@ -44,20 +44,24 @@ void FillRectangle(PixelWriter& writer, const Vector2D<int>& pos,
 void DrawDesktop(PixelWriter& writer) {
   const auto width = writer.Width();
   const auto height = writer.Height();
+  // 背景全体
   FillRectangle(writer,
                 {0, 0},
                 {width, height - 50},
                 kDesktopBGColor);
+  // 下部長方形（大）
   FillRectangle(writer,
                 {0, height - 50},
                 {width, 50},
-                {1, 8, 17});
+                {8, 39, 52});
+  // 下部長方形（中）
   FillRectangle(writer,
                 {0, height - 50},
                 {width / 5, 50},
-                {80, 80, 80});
+                {16, 76, 101});
+  // 下部長方形（小）
   DrawRectangle(writer,
                 {10, height - 40},
                 {30, 30},
-                {160, 160, 160});
+                {22, 130, 164});
 }

@@ -81,22 +81,21 @@ void Window::Move(Vector2D<int> dst_pos, const Rectangle<int>& src) {
 
 namespace {
   const int kCloseButtonWidth = 16;
-  const int kCloseButtonHeight = 14;
+  const int kCloseButtonHeight = 13;
   const char close_button[kCloseButtonHeight][kCloseButtonWidth + 1] = {
-    "...............@",
-    ".:::::::::::::$@",
-    ".:::::::::::::$@",
-    ".:::@@::::@@::$@",
-    ".::::@@::@@:::$@",
-    ".:::::@@@@::::$@",
-    ".::::::@@:::::$@",
-    ".:::::@@@@::::$@",
-    ".::::@@::@@:::$@",
-    ".:::@@::::@@::$@",
-    ".:::::::::::::$@",
-    ".:::::::::::::$@",
-    ".$$$$$$$$$$$$$$@",
-    "@@@@@@@@@@@@@@@@",
+    "::::::::::::::::",
+    "::::::::::::::::",
+    "::::::::::::::::",
+    "::::@@::::@@::::",
+    ":::::@@::@@:::::",
+    "::::::@@@@::::::",
+    ":::::::@@:::::::",
+    "::::::@@@@::::::",
+    ":::::@@::@@:::::",
+    "::::@@::::@@::::",
+    "::::::::::::::::",
+    "::::::::::::::::",
+    "::::::::::::::::",
   };
 
   constexpr PixelColor ToColor(uint32_t c) {
@@ -115,28 +114,34 @@ void DrawWindow(PixelWriter& writer, const char* title) {
   const auto win_w = writer.Width();
   const auto win_h = writer.Height();
 
-  fill_rect({0, 0},         {win_w, 1},             0xc6c6c6);
-  fill_rect({1, 1},         {win_w - 2, 1},         0xffffff);
-  fill_rect({0, 0},         {1, win_h},             0xc6c6c6);
-  fill_rect({1, 1},         {1, win_h - 2},         0xffffff);
-  fill_rect({win_w - 2, 1}, {1, win_h - 2},         0x848484);
-  fill_rect({win_w - 1, 0}, {1, win_h},             0x000000);
-  fill_rect({2, 2},         {win_w - 4, win_h - 4}, 0xc6c6c6);
-  fill_rect({3, 3},         {win_w - 6, 18},        0x000084);
-  fill_rect({1, win_h - 2}, {win_w - 2, 1},         0x848484);
-  fill_rect({0, win_h - 1}, {win_w, 1},             0x000000);
+  // color
+  const uint32_t backgroundColor = 0x0a0e12;
+  const uint32_t borderColor = 0x1682a4;
+  const uint32_t titleBackgroundColor = 0x082734;
+  const uint32_t titleFontColor = 0x1788ac;
+  const uint32_t closeButtonBackgroundColor = 0x104c65;
+  const uint32_t closeButtonCloseIconColor = borderColor;
 
-  WriteString(writer, {24, 4}, title, ToColor(0xffffff));
+  fill_rect({0, 0},         {win_w, 1},             borderColor); // ボーダー上
+  fill_rect({0, 0},         {1, win_h},             borderColor); // ボーダー左
+  fill_rect({win_w - 1, 0}, {1, win_h},             borderColor); // ボーダー右
+  fill_rect({1, 1},         {win_w - 2, win_h - 2}, backgroundColor); // 背景
+  fill_rect({1, 1},         {win_w - 2, 22},        titleBackgroundColor); // タイトル
+  fill_rect({0, win_h - 1}, {win_w, 1},             borderColor); // ボーダー下
 
+  // タイトル文字
+  WriteString(writer, {10, 4}, title, ToColor(titleFontColor));
+
+  // 閉じるボタン
   for (int y = 0; y < kCloseButtonHeight; ++y) {
     for (int x = 0; x < kCloseButtonWidth; ++x) {
       PixelColor c = ToColor(0xffffff);
       if (close_button[y][x] == '@') {
-        c = ToColor(0x000000);
+        c = ToColor(closeButtonCloseIconColor);
       } else if (close_button[y][x] == '$') {
         c = ToColor(0x848484);
       } else if (close_button[y][x] == ':') {
-        c = ToColor(0xc6c6c6);
+        c = ToColor(closeButtonBackgroundColor);
       }
       writer.Write({win_w - 5 - kCloseButtonWidth + x, 5 + y}, c);
     }
