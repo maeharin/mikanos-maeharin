@@ -120,7 +120,13 @@ void DrawRectangle(PixelWriter& writer, const Vector2D<int>& pos,
 void FillRectangle(PixelWriter& writer, const Vector2D<int>& pos,
                    const Vector2D<int>& size, const PixelColor& c);
 
-const PixelColor kDesktopBGColor{10, 14, 18};
-const PixelColor kDesktopFGColor{60, 186, 226};
+// normal mode
+const PixelColor kDesktopBGColor{45, 118, 237};
+const PixelColor kDesktopFGColor{255, 255, 255};
+// dark mode
+const PixelColor kDesktopBGColorDarkmode{10, 14, 18};
+const PixelColor kDesktopFGColorDarkmode{60, 186, 226};
 
 void DrawDesktop(PixelWriter& writer);
+
+extern bool is_darkmode;

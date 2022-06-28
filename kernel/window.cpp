@@ -78,6 +78,14 @@ void Window::Move(Vector2D<int> dst_pos, const Rectangle<int>& src) {
   shadow_buffer_.Move(dst_pos, src);
 }
 
+void Window::SetTitle(char* title) {
+  title_ = title;
+}
+
+char* Window::GetTitle() {
+  return title_;
+}
+
 
 namespace {
   const int kCloseButtonWidth = 16;
@@ -115,12 +123,20 @@ void DrawWindow(PixelWriter& writer, const char* title) {
   const auto win_h = writer.Height();
 
   // color
-  const uint32_t backgroundColor = 0x0a0e12;
-  const uint32_t borderColor = 0x1682a4;
-  const uint32_t titleBackgroundColor = 0x082734;
-  const uint32_t titleFontColor = 0x1788ac;
-  const uint32_t closeButtonBackgroundColor = 0x104c65;
-  const uint32_t closeButtonCloseIconColor = borderColor;
+  uint32_t backgroundColor = 0xc6c6c6;
+  uint32_t borderColor = 0x000000;
+  uint32_t titleBackgroundColor = 0x848484;
+  uint32_t titleFontColor = 0xffffff;
+  uint32_t closeButtonBackgroundColor = 0xffffff;
+  uint32_t closeButtonCloseIconColor = borderColor;
+  if (is_darkmode) {
+    backgroundColor = 0x0a0e12;
+    borderColor = 0x1682a4;
+    titleBackgroundColor = 0x082734;
+    titleFontColor = 0x1788ac;
+    closeButtonBackgroundColor = 0x104c65;
+    closeButtonCloseIconColor = borderColor;
+  }
 
   fill_rect({0, 0},         {win_w, 1},             borderColor); // ボーダー上
   fill_rect({0, 0},         {1, win_h},             borderColor); // ボーダー左

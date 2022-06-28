@@ -9,11 +9,24 @@
 #include <cstring>
 #include "font.hpp"
 #include "layer.hpp"
+#include "graphics.hpp"
 
 Console::Console(const PixelColor& fg_color, const PixelColor& bg_color)
     : writer_{nullptr}, window_{}, fg_color_{fg_color}, bg_color_{bg_color},
       buffer_{}, cursor_row_{0}, cursor_column_{0}, layer_id_{0} {
 }
+
+void Console::ReWrite() {
+  if (is_darkmode) {
+    fg_color_ = kDesktopFGColorDarkmode;
+    bg_color_ = kDesktopBGColorDarkmode;
+  } else {
+    fg_color_ = kDesktopFGColor;
+    bg_color_ = kDesktopBGColor;
+  }
+  Refresh();
+}
+
 
 void Console::PutString(const char* s) {
   while (*s) {
@@ -84,3 +97,5 @@ void Console::Refresh() {
     WriteString(*writer_, Vector2D<int>{0, 16 * row}, buffer_[row], fg_color_);
   }
 }
+
+Console* console;

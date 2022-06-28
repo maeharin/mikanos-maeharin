@@ -14,6 +14,7 @@ class Console {
   void SetWindow(const std::shared_ptr<Window>& window);
   void SetLayerID(unsigned int layer_id);
   unsigned int LayerID() const;
+  void ReWrite();
 
  private:
   void Newline();
@@ -21,8 +22,10 @@ class Console {
 
   PixelWriter* writer_;
   std::shared_ptr<Window> window_;
-  const PixelColor fg_color_, bg_color_;
+  PixelColor fg_color_, bg_color_;
   char buffer_[kRows][kColumns + 1];
   int cursor_row_, cursor_column_;
   unsigned int layer_id_;
 };
+
+extern Console* console;

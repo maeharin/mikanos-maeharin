@@ -36,6 +36,15 @@ class Layer {
   /** @brief レイヤーがドラッグ移動可能なら true を返す。 */
   bool IsDraggable() const;
 
+  Layer& SetIsGlobalBackground(bool isGlobalBackground);
+  bool IsGlobalBackground() const;
+
+  Layer& SetIsConsole(bool isConsole);
+  bool IsConsole() const;
+
+  Layer& SetIsMouse(bool isMouse);
+  bool IsMouse() const;
+
   /** @brief レイヤーの位置情報を指定された絶対座標へと更新する。再描画はしない。 */
   Layer& Move(Vector2D<int> pos);
   /** @brief レイヤーの位置情報を指定された相対座標へと更新する。再描画はしない。 */
@@ -50,6 +59,9 @@ class Layer {
   Vector2D<int> pos_{};
   std::shared_ptr<Window> window_{};
   bool draggable_{false};
+  bool isGlobalBackground_{false};
+  bool isConsole_{false};
+  bool isMouse_{false};
   // #@@range_end(fields)
 };
 
@@ -64,6 +76,7 @@ class LayerManager {
    */
   Layer& NewLayer();
 
+  void ReWriteAllWindows() const;
   /** @brief 現在表示状態にあるレイヤーを描画する。 */
   void Draw(const Rectangle<int>& area) const;
   /** @brief 指定したレイヤーに設定されているウィンドウの描画領域内を再描画する。 */

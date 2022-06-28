@@ -72,9 +72,12 @@ class Window {
    * @param dst_pos   移動先の原点
    */
   void Move(Vector2D<int> dst_pos, const Rectangle<int>& src);
+  void SetTitle(char* title);
+  char* GetTitle();
 
  private:
   int width_, height_;
+  char* title_;
   std::vector<std::vector<PixelColor>> data_{};
   WindowWriter writer_{*this};
   std::optional<PixelColor> transparent_color_{std::nullopt};

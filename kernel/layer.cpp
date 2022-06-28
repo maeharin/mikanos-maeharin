@@ -1,4 +1,6 @@
 #include "layer.hpp"
+#include "logger.hpp"
+#include "console.hpp"
 
 #include <algorithm>
 
@@ -33,6 +35,33 @@ bool Layer::IsDraggable() const {
 }
 // #@@range_end(set_draggable)
 
+Layer& Layer::SetIsGlobalBackground(bool isGlobalBackground) {
+  isGlobalBackground_ = isGlobalBackground;
+  return *this;
+}
+
+bool Layer::IsGlobalBackground() const {
+  return isGlobalBackground_;
+}
+
+Layer& Layer::SetIsConsole(bool isConsole) {
+  isConsole_ = isConsole;
+  return *this;
+}
+
+bool Layer::IsConsole() const {
+  return isConsole_;
+}
+
+Layer& Layer::SetIsMouse(bool isMouse) {
+  isMouse_ = isMouse;
+  return *this;
+}
+
+bool Layer::IsMouse() const {
+  return isMouse_;
+}
+
 Layer& Layer::Move(Vector2D<int> pos) {
   pos_ = pos;
   return *this;
@@ -61,6 +90,22 @@ void LayerManager::SetWriter(FrameBuffer* screen) {
 Layer& LayerManager::NewLayer() {
   ++latest_id_;
   return *layers_.emplace_back(new Layer{latest_id_});
+}
+
+void LayerManager::ReWriteAllWindows() const {
+  for (auto layer : layer_stack_) {
+    if (layer->IsGlobalBackground()) {
+      auto window = layer->GetWindow();
+      DrawDesktop(*window->Writer());
+    } else if (layer->IsConsole()) {
+      console->ReWrite();
+    } else if (layer->IsMouse()) {
+      // マウスは何もしない
+    } else {
+      auto window = layer->GetWindow();
+      DrawWindow(*window->Writer(), window->GetTitle());
+    }
+  }
 }
 
 void LayerManager::Draw(const Rectangle<int>& area) const {

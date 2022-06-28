@@ -37,7 +37,6 @@ char pixel_writer_buf[sizeof(RGBResv8BitPerColorPixelWriter)];
 PixelWriter* pixel_writer;
 
 char console_buf[sizeof(Console)];
-Console* console;
 
 int printk(const char* format, ...) {
   va_list ap;
@@ -55,6 +54,8 @@ int printk(const char* format, ...) {
 char memory_manager_buf[sizeof(BitmapMemoryManager)];
 BitmapMemoryManager* memory_manager;
 
+unsigned int bglayer_id;
+unsigned int darkmode_layer_id;
 unsigned int mouse_layer_id;
 Vector2D<int> screen_size;
 Vector2D<int> mouse_position;
@@ -75,17 +76,36 @@ void MouseObserver(uint8_t buttons, int8_t displacement_x, int8_t displacement_y
   const bool previous_left_pressed = (previous_buttons & 0x01);
   const bool left_pressed = (buttons & 0x01);
   // #@@range_begin(check_draggable)
+
+
   if (!previous_left_pressed && left_pressed) {
     auto layer = layer_manager->FindLayerByPosition(mouse_position, mouse_layer_id);
+
+    // drag start
     if (layer && layer->IsDraggable()) {
       mouse_drag_layer_id = layer->ID();
+      return;
+    }
+
+    // handle darkmode button
+    if (layer && layer->ID() == darkmode_layer_id) {
+      Log(kError, "darkmode button clicked!\n");
+      // toggle
+      is_darkmode = !is_darkmode;
+      // 全て再描画
+      layer_manager->ReWriteAllWindows();
+      // 画面に展開
+      layer_manager->Draw({{0, 0}, screen_size});
+      return;
     }
   // #@@range_end(check_draggable)
   } else if (previous_left_pressed && left_pressed) {
+    // dragging
     if (mouse_drag_layer_id > 0) {
       layer_manager->MoveRelative(mouse_drag_layer_id, posdiff);
     }
   } else if (previous_left_pressed && !left_pressed) {
+    // drag end
     mouse_drag_layer_id = 0;
   }
 
@@ -148,8 +168,11 @@ extern "C" void KernelMainNewStack(
       break;
   }
 
+  is_darkmode = false;
+
   DrawDesktop(*pixel_writer);
 
+  // FIXME: darkmode対応
   console = new(console_buf) Console{
     kDesktopFGColor, kDesktopBGColor
   };
@@ -294,7 +317,14 @@ extern "C" void KernelMainNewStack(
 
   auto main_window = std::make_shared<Window>(
       160, 52, frame_buffer_config.pixel_format);
-  DrawWindow(*main_window->Writer(), "Hello Window");
+  main_window->SetTitle("hello window");
+  DrawWindow(*main_window->Writer(), main_window->GetTitle());
+
+  // darkmode toggle button
+  auto darkmode_window = std::make_shared<Window>(
+      200, 30, frame_buffer_config.pixel_format);
+  darkmode_window->SetTitle("toggle button");
+  DrawWindow(*darkmode_window->Writer(), darkmode_window->GetTitle());
 
   auto console_window = std::make_shared<Window>(
       Console::kColumns * 8, Console::kRows * 16, frame_buffer_config.pixel_format);
@@ -309,12 +339,14 @@ extern "C" void KernelMainNewStack(
   layer_manager = new LayerManager;
   layer_manager->SetWriter(&screen);
 
-  auto bglayer_id = layer_manager->NewLayer()
+  bglayer_id = layer_manager->NewLayer()
     .SetWindow(bgwindow)
+    .SetIsGlobalBackground(true)
     .Move({0, 0})
     .ID();
   mouse_layer_id = layer_manager->NewLayer()
     .SetWindow(mouse_window)
+    .SetIsMouse(true)
     .Move(mouse_position)
     .ID();
   // #@@range_begin(main_window_draggable)
@@ -326,13 +358,19 @@ extern "C" void KernelMainNewStack(
   // #@@range_end(main_window_draggable)
   console->SetLayerID(layer_manager->NewLayer()
     .SetWindow(console_window)
+    .SetIsConsole(true)
     .Move({0, 0})
     .ID());
+  darkmode_layer_id = layer_manager->NewLayer()
+    .SetWindow(darkmode_window)
+    .Move({300, 0})
+    .ID();
 
   layer_manager->UpDown(bglayer_id, 0);
   layer_manager->UpDown(console->LayerID(), 1);
-  layer_manager->UpDown(main_window_layer_id, 2);
-  layer_manager->UpDown(mouse_layer_id, 3);
+  layer_manager->UpDown(darkmode_layer_id, 2);
+  layer_manager->UpDown(main_window_layer_id, 3);
+  layer_manager->UpDown(mouse_layer_id, 4);
   layer_manager->Draw({{0, 0}, screen_size});
 
   char str[128];
@@ -342,10 +380,15 @@ extern "C" void KernelMainNewStack(
     // カウンター
     ++count;
     sprintf(str, "%010u", count);
-    // カウンター背景
-    FillRectangle(*main_window->Writer(), {10, 28}, {8 * 10, 16}, {0x0a, 0x0e, 0x12});
-    // カウンター数値文字
-    WriteString(*main_window->Writer(), {10, 28}, str, {0x3c, 0xba, 0xe2});
+    // FIXME: darkmode対応
+    PixelColor bgColor = {0xc6, 0xc6, 0xc6};
+    PixelColor fontColor = {0xff, 0xff, 0xff};
+    if (is_darkmode) {
+      bgColor = kDesktopBGColorDarkmode;
+      fontColor = {0x3c, 0xba, 0xe2};
+    }
+    FillRectangle(*main_window->Writer(), {10, 28}, {8 * 10, 16}, bgColor);
+    WriteString(*main_window->Writer(), {10, 28}, str, fontColor);
     layer_manager->Draw(main_window_layer_id);
 
     __asm__("cli");
